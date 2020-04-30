@@ -15,7 +15,7 @@ def update_file(file_name, transform):
             print (e)
             return False
         else:
-            with open(file_name, 'w') as writer:
+            with open(file_name, 'w') as writer: # make 'a' and test
                 writer.write(json.dumps(new_data))
         
     return True

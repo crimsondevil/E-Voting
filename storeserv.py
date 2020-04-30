@@ -13,7 +13,8 @@ if __name__ == '__main__':
         enc_vote, n, e = int(enc_vote), int(n), int(e)
 
         votes.append(str(pow(enc_vote, e, n)))
-
+    
+    print (votes)
     if votes:
         mt = merkletools.MerkleTools(hash_type="md5")
         mt.add_leaf(votes, True)
