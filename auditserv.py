@@ -1,5 +1,5 @@
 import pickle, sys, hashlib
-from merkletools import MerkleTools
+from mymerkle import MerkleTools
 
 
 def get_hash(n):

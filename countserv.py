@@ -1,13 +1,13 @@
 import pickle, hashlib, sys
-from merkletools import MerkleTools
+from mymerkle import MerkleTools
 
 
 def get_hash(n):
     return hashlib.md5(str(n).encode()).digest().hex()
 
 if __name__ == "__main__":
-    candidate = int(sys.argv[1])
-    candidate = get_hash(candidate)
+    # candidate = int(sys.argv[1])
+    # candidate = get_hash(candidate)
 
     mt = pickle.load(open('merkle', 'rb'))
 
@@ -19,4 +19,4 @@ if __name__ == "__main__":
             vote_map[leaf] = 0
         vote_map[leaf] += 1
 
-    print(vote_map[candidate])
+    print(vote_map)

@@ -1,4 +1,5 @@
-import json, merkletools, pickle
+import json, pickle
+from mymerkle import MerkleTools
 
 
 if __name__ == '__main__':
@@ -16,7 +17,7 @@ if __name__ == '__main__':
     
     print (votes)
     if votes:
-        mt = merkletools.MerkleTools(hash_type="md5")
+        mt = MerkleTools(hash_type="md5")
         mt.add_leaf(votes, True)
         mt.make_tree()
 
