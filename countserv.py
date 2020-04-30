@@ -43,15 +43,19 @@ class m_Tree:
 
 def decVote():
     voteFile = open("votes.data", 'r')
-    eV, eBID = voteFile.read().split(',')
+    bID, eV = voteFile.read(#insert ur code to extract data)
     voteFile.close()
-#maybe have vid to abv
-    
-    v, n, e = open("voters.pub", 'r').read().split(',')
-    e, n = int(e), int(n)
-    BID = pow(dBID, e, n)
-    V = pyaes.AESModeOfOperationCTR(BID)
-    print(V)
+
+    bvFile = open("voterballots.list", 'r')
+    Vid, Bid = bvFile.read().split(',')
+    bvFile.close()
+
+    if bID == Bid:
+        #Here compare Vid[from abv] and v[from boters.pub] to read its corr n,e
+        n, e = open("voters.pub", 'r').read().split(',')
+
+        eV, e, n = int(eV), int(e), int(n)
+        V = pow(V, e, n)
 
 if __name__ == "__main__":
     decVote();

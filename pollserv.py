@@ -14,22 +14,30 @@ def generateBallot(vid):
     return bId
 
 def encVote(vt, bid, vid):
-    evt = pyaes.AESModeOfOperationCTR(bid).encrypt(vt)
-    ebid = RSAbID(bid, vid)
+    v, n, d = open("voters.prv", 'r').read().split(',')
+    if v == vid:
+        vt, d, n = int(vt), int(d), int(n)
+        evt = pow(vt, d, n)
+        evt = bytes(str(evt).encode())
+    #
+    # return encB
+    #
+    # evt = pyaes.AESModeOfOperationCTR(bid).encrypt(vt)
+    # ebid = RSAbID(bid, vid)
 
     encFile = open("poll.data", 'w')
-    encFile.write('%s, %s, %s' % (bid, evt, ebid))
+    encFile.write('%s, %s' % (bid, evt))
     encFile.close()
 
-def RSAbID(bID, vID):
-    v, n, d = open("voters.prv", 'r').read().split(',')
-    if v == vID:
-        p = int.from_bytes(bID, sys.byteorder)
-        d, n = int(d), int(n)
-        encB = pow(p, d, n)
-        encB = bytes(str(encB).encode())
-
-    return encB
+# def RSAbID(bID, vID):
+#     v, n, d = open("voters.prv", 'r').read().split(',')
+#     if v == vID:
+#         p = int.from_bytes(bID, sys.byteorder)
+#         d, n = int(d), int(n)
+#         encB = pow(p, d, n)
+#         encB = bytes(str(encB).encode())
+#
+#     return encB
 
 if __name__ == '__main__':
     voterID = sys.argv[1]
@@ -42,3 +50,5 @@ if __name__ == '__main__':
     if fileVoterID == voterID:
         ballotID = generateBallot(voterID)
         encVote(vote, ballotID, voterID)
+    else:
+        print("Voter not found. Register!")
