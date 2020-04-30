@@ -1,14 +1,14 @@
 import hashlib, json, os, random, sys
+from datetime import datetime
+from helpers import update_file
+
 
 def genVid(nm, yr, ssn):
     v = nm + yr + ssn
-    vId = hashlib.shake_256(v.encode('utf-8')).hexdigest(5)
+    vId = hashlib.shake_256(ssn.encode('utf-8')).hexdigest(5)
+    vData = hashlib.shake_256(v.encode('utf-8')).hexdigest(5)
 
-    vFile = open("voters.list", 'w')
-    vFile.write('%s' % (vId))
-    vFile.close()
-
-    return vId
+    return vId, vData
 
 def gcd(a, b):
     while a != 0:
@@ -75,31 +75,33 @@ def generateKey(keySize):
             break
 
     d = findModInverse(e, t)
-    publicKey = (n, e)
-    privateKey = (n, d)
+    publicKey = (str(n), str(e))
+    privateKey = (str(n), str(d))
     #print('Public key:', publicKey)
     #print('Private key:', privateKey)
     return (publicKey, privateKey)
 
-def makeKeyFiles(id, keySize):
+def makeKeyFiles(vid, vdata, keySize):
     publicKey, privateKey = generateKey(keySize)
 
-    pubKey = open("voters.pub", 'w')
-    pubKey.write('%s, %s, %s' % (id, publicKey[0], publicKey[1]))
-    pubKey.close()
+    def transform(voter_map):
+        if not voter_map.get(vid, None):
+            voter_map[vid] = {}
+        voter_map[vid]["data"] = vdata
+        voter_map[vid]["pub"] = ",".join(publicKey)
+        voter_map[vid]["prv"] = ",".join(privateKey)
+        return voter_map
 
-    prvKey = open("voters.prv", 'w')
-    prvKey.write('%s, %s, %s' % (id, privateKey[0], privateKey[1]))
-    prvKey.close()
+    update_file('data/voters.json', transform) 
 
 if __name__ == "__main__":
     size = 1024
     vName = sys.argv[1]
     vYear = sys.argv[2]
     vSsn = sys.argv[3]
-    if int(vYear) <= 1999:
-        #check if vid exists
-        vid = genVid(vName, vYear, vSsn)
-        makeKeyFiles(vid, size)
+    if (datetime.now().year - int(vYear)) > 18:
+        vid, vdata = genVid(vName, vYear, vSsn)
+        makeKeyFiles(vid, vdata, size)
+        print (vid)
     else:
         print('Underage. Come back next year!')
