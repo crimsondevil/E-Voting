@@ -1,54 +1,44 @@
-import os, pyaes, sys
+import os, json, sys
+from helpers import update_file
 
-def generateBallot(vid):
-    bId = os.urandom(16)
+def generateBallot(voter_id):
+    ballotID = os.urandom(16).hex()
 
-    bFile = open("ballots.list", 'w')
-    bFile.write('%s' % (str(bId)))
-    bFile.close()
-#maybe this is reqd
-    vbFile = open("voterballots.list", 'w')
-    vbFile.write('%s, %s' % (vid, str(bId)))
-    vbFile.close()
+    def transform(ballot_map):
+        if voter_id in ballot_map.values():
+            raise Exception("You have already registered a vote. You cannot vote again.")
+        else:
+            ballot_map[ballotID] = voter_id
+            print ("A unique ballot has been created for voter ID:", voter_id)
+        return ballot_map
 
-    return bId
+    status = update_file('data/ballot.json', transform)
 
-def encVote(vt, bid, vid):
-    v, n, d = open("voters.prv", 'r').read().split(',')
-    if v == vid:
-        vt, d, n = int(vt), int(d), int(n)
-        evt = pow(vt, d, n)
-        evt = bytes(str(evt).encode())
-    #
-    # return encB
-    #
-    # evt = pyaes.AESModeOfOperationCTR(bid).encrypt(vt)
-    # ebid = RSAbID(bid, vid)
+    return ballotID if status else None
 
-    encFile = open("poll.data", 'w')
-    encFile.write('%s, %s' % (bid, evt))
-    encFile.close()
 
-# def RSAbID(bID, vID):
-#     v, n, d = open("voters.prv", 'r').read().split(',')
-#     if v == vID:
-#         p = int.from_bytes(bID, sys.byteorder)
-#         d, n = int(d), int(n)
-#         encB = pow(p, d, n)
-#         encB = bytes(str(encB).encode())
-#
-#     return encB
+def encVote(vote, ballot_id, voter_id, voter_data):
+    n, d = voter_data['prv'].split(',')
+    vote, d, n = int(vote), int(d), int(n)
+    enc_vote = pow(vote, d, n)
+
+    def transform(polls_map):
+        polls_map[ballot_id] = str(enc_vote)
+        return polls_map
+    update_file('data/polls.json', transform)
+    print ("Your vote has been casted successfully. Thank you!")
 
 if __name__ == '__main__':
     voterID = sys.argv[1]
     vote = sys.argv[2]
 
-    voterFile = open("voters.list", 'r')
-    fileVoterID = voterFile.read()
-    voterFile.close()
+    with open('data/voters.json', 'r') as voter_file:
+        voter_map = json.load(voter_file)
 
-    if fileVoterID == voterID:
-        ballotID = generateBallot(voterID)
-        encVote(vote, ballotID, voterID)
-    else:
-        print("Voter not found. Register!")
+        if voter_map.get(voterID, None):
+            ballotID = generateBallot(voterID)
+            voter_data = voter_map[voterID]
+            if ballotID:
+                encVote(vote, ballotID, voterID, voter_data)
+        else:
+            print("Voter not found. Register!")
